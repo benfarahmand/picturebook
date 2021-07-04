@@ -1,118 +1,282 @@
 var pageImage;
-var pageAudio;
+// var pageAudio;
 var pageText;
 var pageWords;
+var audioFiles;
+var audioFileCounter, totalAudioFiles;
 var pages;
-var textfontsize = 28;
+var numberOfPages;
+var textfontsize = 32;
 var speakerWidth = 70;
 var speakerHeight = 70;
 var imageSize = 200;
 var dir = "./content/";
 var speakImage;
-
-function preload(){
-	loadPage();
-}
+var currentPage;
+var currentFolder;
+var navButtons;
+var imageLoaded;
+var audioFilesLoaded;
+var textLoaded;
+var createNewPage;
 
 function setup() {
-	createPages();
-	// positionPages();
+	currentPage=0;
+	loadPage();
 	createCanvas(windowWidth, windowHeight-10);
 	background(0);
 	textSize(textfontsize);
 	textAlign(LEFT,TOP)
 	fill(255);
+	initNavUI();
 }
 
 function draw() {
 	background(0);
-	for(var i = 0 ; i < pages.length ; i++){
-		pages[i].display();
+	// console.log(isItLoading());
+	if(isItLoading()) {
+		fill(255);
+		text("Loading...",0,0,windowWidth/2,windowHeight/2);
 	}
+	else{
+		if(createNewPage) createPages();
+		else {
+			pages.display();
+		}
+	}
+	navButtons.display();
+}
+
+//if the files are still loading, return true, else return false
+function isItLoading(){
+	if(!(imageLoaded && textLoaded && audioFilesLoaded)){
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function initNavUI(){
+	var buttonFunctions = [2];
+	var buttonLabels = [2];
+	buttonFunctions[0] = previousPage;
+	buttonFunctions[1] = nextPage;
+	buttonLabels[0] = "Previous";
+	buttonLabels[1] = "Next";
+	navButtons = new navUI(0,windowHeight*0.8,windowWidth,windowHeight*0.2,buttonLabels,buttonFunctions);
+}
+
+function nextPage(){
+	currentPage++;
+	if(currentPage==numberOfPages)currentPage=numberOfPages-1;
+	else loadPage();
+}
+
+function previousPage(){
+	currentPage--;
+	if(currentPage<0)currentPage=0;
+	else loadPage();
 }
 
 function mouseDragged(){
 }
 
 function mouseReleased(){
+	pages.mouseReleased();
+	navButtons.mouseReleased();
+	// for(var i = 0 ; i < pages.length ; i++){
+	// 	pages[i].mouseReleased();
+	// }
+}
+
+function mouseWheel(event) {
 }
 
 function windowResized() {
+  // clear();
   // resizeCanvas(windowWidth, windowHeight);
+  // for(var i = 0 ; i < pages.length ; i++){
+  // 	if(pages[i].active) pages[i].positionMyWordsInTextArea();
+  // }
 }
 
 function loadPage(){
-	print("started loading");
+	console.log("load page");
+	createNewPage=true;
+	imageLoaded=false;
+	audioFilesLoaded=false;
+	textLoaded=false;
 	loadStrings(dir+"audio/folders.txt",loadWordFolders);
 	loadStrings(dir+"text/story.txt",loadPageText);
 	loadStrings(dir+"pictures/filenames.txt",loadPageImage);
-	print("finished loading");
 }
 
 function loadWordFolders(result){
-	pageAudio=[];
-	for(var i = 0 ; i < result.length ; i++){
-		loadStrings(dir+"audio/"+result[i]+"/filenames.txt",loadWordSounds);
-	}
+	numberOfPages = result.length;
+	// pageAudio=[];
+	currentFolder = result[currentPage];
+	var directory = dir+"audio/"+result[currentPage]+"/filenames.txt";
+	// for(var i = 0 ; i < result.length ; i++){
+	loadStrings(directory, loadWordSounds);
+	// }
+	// console.log(directory);
 }
 
 function loadWordSounds(result){
-	var audioFiles=[];
+	audioFiles=[];
+	audioFileCounter=0;
+	totalAudioFiles=result.length;
 	for(var i = 0 ; i < result.length ; i++){
-		audioFiles.push(loadSound(dir+"audio/page01/"+result[i]));
+		var directory = dir+"audio/"+currentFolder+"/"+result[i]
+		audioFiles.push(loadSound(directory,checkIfAudioFilesAreLoaded));
+		// console.log(directory);
 	}
-	pageAudio.push(audioFiles);
+	// pageAudio.push(audioFiles);
+	// console.log("loadWordSounds");
+}
+
+function checkIfAudioFilesAreLoaded(){
+	audioFileCounter++;
+	if(audioFileCounter==totalAudioFiles) audioFilesLoaded=true;
 }
 
 function loadPageText(result){
 	pageText = [];
-	pageText = splitTokens(result[0]," ");
+	pageText = splitTokens(result[currentPage]," ");
+	// console.log("loadPageText");
+	textLoaded=true;
 }
 
 function loadPageImage(result){
-	pageImage = [];
-	for(var i = 0 ; i < result.length ; i++){
-		pageImage.push(loadImage(dir+"/pictures/"+result[i]));
-	}
+	// pageImage = [];
+	// for(var i = 0 ; i < result.length ; i++){
+	var directory = dir+"pictures/"+result[currentPage];
+	pageImage = loadImage(directory,checkIfImageLoaded);
+	// console.log(directory);
+	// }
+	// console.log("loadPageImage");
+}
+
+function checkIfImageLoaded(){
+	// console.log("checkIfImageLoaded");
+	imageLoaded=true;
 }
 
 function createPages(){
-	pages = [];
-	for(var i = 0 ; i < pageAudio.length ; i++){
-		pages.push(new Page(0,0,windowWidth,windowHeight,pageImage[i],pageAudio[i],pageText,false));
-	}
-	pages[0].active=true;
+	// console.log("Started createPages")
+	pages = new Page(0,0,windowWidth,windowHeight,pageImage,audioFiles,pageText,true,currentPage);
+	createNewPage=false;
+
+	// for(var i = 0 ; i < pageAudio.length ; i++){
+	// 	pages.push(;
+	// }
+	// console.log("Finished createPages")
 }
 
 function positionPages(){
-	for(var i = 0 ; i < pages.length ; i++){
-		pages[i].x=0;
-		pages[i].y=i*imageSize;
+	pages.x=0;
+	pages.y=i*imageSize;
+	// for(var i = 0 ; i < pages.length ; i++){
+	// 	pages[i].x=0;
+	// 	pages[i].y=i*imageSize;
+	// }
+}
+
+class navUI{
+	constructor(x,y,w,h,myButtonLabels,myFunctions){
+		this.x = x;
+	    this.y = y;
+	    this.width = w;
+	    this.height = h;
+	    this.labels = myButtonLabels;
+	    this.myFunctions = myFunctions;
+	    this.myButtons = [this.labels.length];
+	    for(var i = 0 ; i < this.labels.length ; i++){
+	    	var buttonX = this.x+i*this.width/this.labels.length;
+	    	var buttonY = this.y;
+	    	var buttonWidth = this.width/this.labels.length;
+	    	var buttonHeight = this.height;
+	    	var buttonLabel = this.labels[i];
+	    	var buttonFunction = this.myFunctions[i];
+	    	this.myButtons[i] = new Button(buttonX,buttonY,buttonWidth,buttonHeight,buttonLabel,buttonFunction);
+	    }
+	}
+
+	display(){
+		for(var i = 0 ; i < this.myButtons.length ; i++){
+			this.myButtons[i].display();
+		}
+	}
+
+	over() {
+	    if (mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y + this.height) {
+	      return true;
+	    } else {
+	      return false;
+	    }
+	}
+
+	mouseReleased(){
+		if(this.over()){
+			for(var i = 0 ; i < this.myButtons.length ; i++){
+				this.myButtons[i].mouseReleased();
+			}
+		}
 	}
 }
 
-function mouseReleased(){
-	for(var i = 0 ; i < pages.length ; i++){
-		pages[i].mouseReleased();
+class Button {
+	constructor(x,y,w,h,label,myF){
+		this.x = x;
+	    this.y = y;
+	    this.width = w;
+	    this.height = h;
+	    this.label = label;
+	    this.myFunction = myF;
+	}
+
+	display(){
+		textAlign(CENTER,CENTER)
+		fill(200);
+		rect(this.x,this.y,this.width,this.height);
+		fill(0);
+		text(this.label,this.x+this.width/2,this.y+this.height/2);
+		textAlign(LEFT,TOP)
+	}
+
+	over() {
+	    if (mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y + this.height) {
+	      return true;
+	    } else {
+	      return false;
+	    }
+	}
+
+	mouseReleased(){
+		if(this.over()) {
+			this.myFunction();
+		}
 	}
 }
 
 class Page {
   
-  constructor(inX, inY, w, h, myImg, myAudio, myText, myActive) {
-    this.x = inX;
-    this.y = inY;
+  constructor(x, y, w, h, myImg, myAudio, myText, myActive, pageNumber) {
+    this.x = x;
+    this.y = y;
     this.width = w;
     this.height = h;
+    this.number = pageNumber;
     this.img = myImg;
     this.imgX = 0;
     this.imgY = 0;
-    this.imgWidth = myImg.width;
-    this.imgHeight = myImg.height;
-    this.textAreaX = 10;
-    this.textAreaY = myImg.height+10;
-    this.textAreaWidth = myImg.width;
-    this.textAreaHeight = windowHeight-myImg.height-10;
+    this.imgHeight = windowHeight*0.8;
+    this.imgWidth = this.img.width/this.img.height*this.imgHeight;
+    this.textAreaX = this.imgWidth+10;
+    this.textAreaY = 10;
+    this.textAreaWidth = windowWidth;
+    this.textAreaHeight = this.imgHeight-10;
     this.audio = myAudio;
     this.sentence = myText;
     this.words = [];
@@ -126,13 +290,17 @@ class Page {
   display() {
     if(this.active){
     	image(this.img, this.imgX, this.imgY, this.imgWidth, this.imgHeight);
+    	fill(255);
     	for(var i = 0 ; i < this.words.length ; i++){
     		this.words[i].display();
     	}
-    }
+    } 
+    // if(this.number = currentPage) this.active = true;
+    // else this.active = false;
   }
 
   positionMyWordsInTextArea(){
+  	this.textAreaWidth = windowWidth;
 	var wordSpacing = 5;
 	var lineHeight = textfontsize*1.2;
 	var y = this.textAreaY;
