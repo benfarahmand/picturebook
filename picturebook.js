@@ -358,13 +358,21 @@ class Page {
   }
 
   mouseReleased(){
-  	//if over image, play the entire sentence
-  	if(this.overImage()) this.playSentence();
-  	//if over word, play that word
-  	if(this.overTextArea()) {
-  		for(var i = 0 ; i < this.words.length ; i++){
-  			this.words[i].mouseReleased();
-  		}
+  	//need to check if any audio is playing. if any audio is playing, don't play any audio until
+  	//the existing audio is done
+  	var anythingCurrentlyPlaying = false;
+  	for(var i = 0 ; i < this.words.length ; i++){
+  		if(this.words[i].audio.isPlaying()) anythingCurrentlyPlaying = true;
+  	}
+  	if(!anythingCurrentlyPlaying){
+	  	//if over image, play the entire sentence
+	  	if(this.overImage()) this.playSentence();
+	  	//if over word, play that word
+	  	if(this.overTextArea()) {
+	  		for(var i = 0 ; i < this.words.length ; i++){
+	  			this.words[i].mouseReleased();
+	  		}
+	  	}
   	}
   }
 }
