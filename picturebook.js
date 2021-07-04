@@ -6,7 +6,7 @@ var audioFiles;
 var audioFileCounter, totalAudioFiles;
 var pages;
 var numberOfPages;
-var textfontsize = 32;
+var textfontsize = 28;
 var speakerWidth = 70;
 var speakerHeight = 70;
 var imageSize = 200;
@@ -102,7 +102,7 @@ function windowResized() {
 }
 
 function loadPage(){
-	console.log("load page");
+	// console.log("load page");
 	createNewPage=true;
 	imageLoaded=false;
 	audioFilesLoaded=false;
@@ -302,7 +302,7 @@ class Page {
   positionMyWordsInTextArea(){
   	this.textAreaWidth = windowWidth;
 	var wordSpacing = 5;
-	var lineHeight = textfontsize*1.2;
+	var lineHeight = textfontsize;
 	var y = this.textAreaY;
 	for(var i = 0 ; i < this.words.length ; i++){
 		if(i==0) {
