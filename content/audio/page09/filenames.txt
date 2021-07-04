@@ -1,0 +1,12 @@
+word0.wav
+word1.wav
+word2.wav
+word3.wav
+word4.wav
+word5.wav
+word6.wav
+word7.wav
+word8.wav
+word9.wav
+word10.wav
+word11.wav
