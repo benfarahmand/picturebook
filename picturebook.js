@@ -301,6 +301,7 @@ class Page {
     this.active = myActive;
     this.positionMyWordsInTextArea();
     this.stopAudio = false;
+    this.sentencePlaying = false;
   }
   
   display() {
@@ -385,11 +386,16 @@ class Page {
 
   playSentence(){
   	var duration = 0.0;
+  	this.sentencePlaying = true;
   	for(var i = 0 ; i < this.audio.length ; i++){
-  		duration += this.audio[i].duration()+0.1;
+  		duration += this.audio[i].duration()-0.1;
   		setTimeout( function(audio){audio.play()},duration*1000,this.audio[i]);
   	}
   }
+
+  // playAudio(audio,index,state){
+  // 	audio[index]
+  // }
 
 	disposeAudioResources(){
 		for(var i = 0 ; i < this.words.length ; i++){
@@ -399,9 +405,11 @@ class Page {
 
 	stopAllAudio(){
 		this.stopAudio=true;
-		for(var i = 0 ; i < this.words.length ; i++){
-	  		this.words[i].audio.stop(0.0);
-	  	}
+		//the following code audio.stop() will cause an invalid state in Safari
+		// for(var i = 0 ; i < this.words.length ; i++){
+	  		// this.words[i].audio.stop();
+	  		// this.words[i].audio.playMode('restart');
+	  	// }
 	}
 
   mouseReleased(){
