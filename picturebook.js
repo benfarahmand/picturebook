@@ -217,6 +217,9 @@ class navUI{
 	display(){
 		for(var i = 0 ; i < this.myButtons.length ; i++){
 			this.myButtons[i].display();
+			stroke(0);
+			strokeWeight(2);
+			line(i*this.width/this.myButtons.length,this.y,i*this.width/this.myButtons.length,this.y+this.height);
 		}
 	}
 
@@ -248,6 +251,7 @@ class Button {
 	}
 
 	display(){
+		noStroke();
 		textAlign(CENTER,CENTER)
 		fill(200);
 		rect(this.x,this.y,this.width,this.height);
@@ -313,25 +317,43 @@ class Page {
 
   positionMyWordsInTextArea(){
   	this.textAreaWidth = windowWidth;
-	var wordSpacing = 5;
-	var lineHeight = textfontsize;
-	var y = this.textAreaY;
-	for(var i = 0 ; i < this.words.length ; i++){
-		if(i==0) {
-			this.words[i].x=this.textAreaX;
-		}
-		else {
-			var x = wordSpacing+this.words[i].width+this.words[i-1].width+this.words[i-1].x;
-			if(x>this.textAreaWidth){
-				y += this.words[i].height+lineHeight;
+	//need to reduce font size until the words fit within the height of the text area
+	var totalHeightOfLines = 0.0;
+	var variableFontSize = textfontsize;
+	while(true){
+		// console.log(variableFontSize);
+		textSize(variableFontSize);
+		var wordSpacing = 5.0*variableFontSize/textfontsize;
+		var lineHeight = variableFontSize;
+		var y = this.textAreaY;
+		for(var i = 0 ; i < this.words.length ; i++){
+			if(i==0) {
 				this.words[i].x=this.textAreaX;
 			}
 			else {
-				this.words[i].x=x-this.words[i].width;
+				var x = wordSpacing+this.words[i].width+this.words[i-1].width+this.words[i-1].x;
+				if(x>this.textAreaWidth){
+					y += this.words[i].height+lineHeight;
+					this.words[i].x=this.textAreaX;
+					totalHeightOfLines = y;
+				}
+				else {
+					this.words[i].x=x-this.words[i].width;
+				}
+			}
+			this.words[i].y=y;
+		}
+		if(totalHeightOfLines > this.textAreaHeight){
+			variableFontSize=variableFontSize-2;
+			for(var i = 0 ; i < this.words.length ; i++) {
+				this.words[i].width = textWidth(this.words[i].word);
+				this.words[i].height = variableFontSize;
 			}
 		}
-		this.words[i].y=y;
-		this.words[i].positionMyLetters();
+		if(variableFontSize<0 || totalHeightOfLines < this.textAreaHeight) {
+			for(var i = 0 ; i < this.words.length ; i++) this.words[i].positionMyLetters();
+			break;
+		}
 	}
   }
   
