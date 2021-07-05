@@ -70,13 +70,24 @@ function initNavUI(){
 function nextPage(){
 	currentPage++;
 	if(currentPage==numberOfPages)currentPage=numberOfPages-1;
-	else loadPage();
+	else {
+		clearAudioMemory();
+		loadPage();
+	}
 }
 
 function previousPage(){
 	currentPage--;
 	if(currentPage<0)currentPage=0;
-	else loadPage();
+	else {
+		clearAudioMemory();
+		loadPage();
+	}
+}
+
+function clearAudioMemory(){
+	pages.stopAllAudio();
+	pages.disposeAudioResources();
 }
 
 function mouseDragged(){
@@ -285,6 +296,7 @@ class Page {
     }
     this.active = myActive;
     this.positionMyWordsInTextArea();
+    this.stopAudio = false;
   }
   
   display() {
@@ -357,6 +369,19 @@ class Page {
   	}
   }
 
+	disposeAudioResources(){
+		for(var i = 0 ; i < this.words.length ; i++){
+	  		this.words[i].audio.dispose();
+	  	}
+	}
+
+	stopAllAudio(){
+		this.stopAudio=true;
+		for(var i = 0 ; i < this.words.length ; i++){
+	  		this.words[i].audio.stop(0.0);
+	  	}
+	}
+
   mouseReleased(){
   	//need to check if any audio is playing. if any audio is playing, don't play any audio until
   	//the existing audio is done
@@ -370,6 +395,7 @@ class Page {
 	  	//if over word, play that word
 	  	if(this.overTextArea()) {
 	  		for(var i = 0 ; i < this.words.length ; i++){
+	  			if(this.stopAudio) break;
 	  			this.words[i].mouseReleased();
 	  		}
 	  	}
