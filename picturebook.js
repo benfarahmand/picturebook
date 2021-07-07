@@ -102,6 +102,7 @@ function mouseReleased(){
 }
 
 function mouseWheel(event) {
+	return false;
 }
 
 function windowResized() {
